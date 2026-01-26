@@ -16,13 +16,16 @@ const syncUser=inngest.createFunction(
     const newUser={
       clerkId:id,
       email:email_addresses[0].email_address,
-      name:`${first_name || " "} ${last_name || " "} || "User "`,
-      imageUrl:image_url,
+      name:`${first_name || ""} ${last_name || ""}`.trim() || "User",
+      imageUrl:image_url || "",
       addresses:[],
-      wistlist:[],
+      wishlist:[],
 
     };
-    await User.create(newUser);
+    
+    console.log("Creating user in MongoDB:", newUser);
+    const user = await User.create(newUser);
+    console.log("User created successfully:", user._id);
   }
 );
 
