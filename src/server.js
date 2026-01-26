@@ -1,6 +1,7 @@
 import express from "express";
 import { ENV } from "./config/env.js";
 import connectToDB from "./config/db.js";
+import cors from "cors";
 
 import path from "path";
 import { clerkMiddleware } from "@clerk/express";
@@ -10,6 +11,11 @@ import { serve } from "inngest/express";
 const app = express();
 
 const __dirname = path.resolve();
+
+app.use(cors({
+  origin: ENV.FRONTEND_URL || "http://localhost:5173",
+  credentials: true
+}));
 
 app.use(clerkMiddleware());
 
@@ -29,7 +35,7 @@ if (ENV.NODE_ENV === "production") {
   });
 }
 
-const PORT = process.env.PORT || ENV.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT}`);
