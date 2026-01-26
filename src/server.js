@@ -40,14 +40,7 @@ app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "API is Working" });
 });
 
-/* -------------------- PRODUCTION STATIC (OPTIONAL) -------------------- */
-/*
-⚠️ IMPORTANT:
-On Render FREE, you should NOT serve frontend from backend.
-Vercel will host frontend.
 
-So we keep this BLOCKED unless you move to a paid plan.
-*/
 if (ENV.NODE_ENV === "production" && false) {
   app.use(express.static(path.join(__dirname, "../../admin/dist")));
 
