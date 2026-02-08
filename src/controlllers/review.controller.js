@@ -84,7 +84,7 @@ export async function createReview(req, res) {
         const updatedOrder = await Order.findOneAndUpdate(
           { _id: orderId, invoiceSent: false },
           { invoiceSent: true },
-          { new: true }
+          { new: true },
         );
 
         // Only send email if we successfully claimed the invoice sending (updatedOrder will be null if already sent)

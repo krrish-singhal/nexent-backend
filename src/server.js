@@ -26,7 +26,11 @@ app.use(
       ENV.FRONTEND_URL,
       "http://localhost:5173",
       "http://192.168.9.236:5173",
+      "https://nexent-admin.vercel.app",
+      "https://nexent-admin.netlify.app",
       /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:(3000|5173|8081)$/,
+      /^https:\/\/.*\.vercel\.app$/,
+      /^https:\/\/.*\.netlify\.app$/,
     ],
     credentials: true,
   }),
@@ -62,9 +66,23 @@ app.use((req, res, next) => {
 app.use("/api/inngest", serve({ client: inngest, functions }));
 app.use("/api/users", userRoutes);
 
+// Root route handler
+app.get("/", (req, res) => {
+  res.status(200).json({ 
+    message: "Nexent Backend API",
+    status: "running",
+    version: "1.0.0",
+    endpoints: {
+      health: "/api/health",
+      docs: "https://github.com/nexent/api-docs"
+    }
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "API is Working" });
 });
+
 if (ENV.NODE_ENV === "production" && false) {
   app.use(express.static(path.join(__dirname, "../../admin/dist")));
   app.get("*", (req, res) => {

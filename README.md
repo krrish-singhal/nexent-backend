@@ -41,17 +41,20 @@ A production-ready RESTful API backend for the Nexent e-commerce platform, built
 ## 🔧 Installation
 
 ### 1. Clone the repository
+
 ```bash
 git clone <repository-url>
 cd backend
 ```
 
 ### 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 ### 3. Configure environment variables
+
 Create a `.env` file in the root directory:
 
 ```env
@@ -91,6 +94,7 @@ FRONTEND_URL=http://localhost:5173
 ```
 
 ### 4. Seed the database (optional)
+
 ```bash
 npm run seed
 ```
@@ -98,11 +102,13 @@ npm run seed
 ### 5. Start the server
 
 **Development mode (with auto-reload):**
+
 ```bash
 npm run dev
 ```
 
 **Production mode:**
+
 ```bash
 npm start
 ```
@@ -165,17 +171,20 @@ backend/
 The API uses **Clerk** for authentication. Protected routes require a valid JWT token in the request headers.
 
 ### Headers Required:
+
 ```
 Authorization: Bearer <clerk-jwt-token>
 ```
 
 ### Middleware:
+
 - `protectRoute` - Validates user authentication
 - `adminOnly` - Validates admin role (email must end with @nexent.in)
 
 ## 📚 API Documentation
 
 ### Base URL
+
 ```
 http://localhost:3000/api
 ```
@@ -185,6 +194,7 @@ http://localhost:3000/api
 ## 👤 User Routes
 
 ### 1. Sync User (Clerk Webhook)
+
 ```http
 POST /api/user/sync
 Content-Type: application/json
@@ -193,11 +203,14 @@ Body: Clerk user webhook payload
 ```
 
 ### 2. Get Current User
+
 ```http
 GET /api/user/me
 Authorization: Bearer <token>
 ```
+
 **Response:**
+
 ```json
 {
   "user": {
@@ -212,12 +225,14 @@ Authorization: Bearer <token>
 ```
 
 ### 3. Get User Profile
+
 ```http
 GET /api/user/profile
 Authorization: Bearer <token>
 ```
 
 ### 4. Update User Profile
+
 ```http
 PUT /api/user/profile
 Authorization: Bearer <token>
@@ -230,6 +245,7 @@ Body:
 ```
 
 ### 5. Add Address
+
 ```http
 POST /api/user/addresses
 Authorization: Bearer <token>
@@ -249,12 +265,14 @@ Body:
 ```
 
 ### 6. Get All Addresses
+
 ```http
 GET /api/user/addresses
 Authorization: Bearer <token>
 ```
 
 ### 7. Update Address
+
 ```http
 PUT /api/user/addresses/:addressId
 Authorization: Bearer <token>
@@ -264,12 +282,14 @@ Body: Same as Add Address
 ```
 
 ### 8. Delete Address
+
 ```http
 DELETE /api/user/addresses/:addressId
 Authorization: Bearer <token>
 ```
 
 ### 9. Add to Wishlist
+
 ```http
 POST /api/user/wishlist
 Authorization: Bearer <token>
@@ -282,12 +302,14 @@ Body:
 ```
 
 ### 10. Remove from Wishlist
+
 ```http
 DELETE /api/user/wishlist/:productId
 Authorization: Bearer <token>
 ```
 
 ### 11. Get Wishlist
+
 ```http
 GET /api/user/wishlist
 Authorization: Bearer <token>
@@ -298,14 +320,18 @@ Authorization: Bearer <token>
 ## 🛍️ Product Routes
 
 ### 1. Get All Products
+
 ```http
 GET /api/products?category=<category>&search=<query>
 ```
+
 **Query Parameters:**
+
 - `category` (optional): Filter by category
 - `search` (optional): Search in product name/description
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -331,16 +357,19 @@ GET /api/products?category=<category>&search=<query>
 ```
 
 ### 2. Get Product by ID
+
 ```http
 GET /api/products/:id
 Authorization: Bearer <token>
 ```
 
 ### 3. Get Personalized Recommendations
+
 ```http
 GET /api/products/recommendations/personalized
 Authorization: Bearer <token>
 ```
+
 Returns product recommendations based on user's wishlist and purchase history.
 
 ---
@@ -348,12 +377,14 @@ Returns product recommendations based on user's wishlist and purchase history.
 ## 🛒 Cart Routes
 
 ### 1. Get Cart
+
 ```http
 GET /api/cart
 Authorization: Bearer <token>
 ```
 
 ### 2. Add to Cart
+
 ```http
 POST /api/cart
 Authorization: Bearer <token>
@@ -367,6 +398,7 @@ Body:
 ```
 
 ### 3. Update Cart Item
+
 ```http
 PUT /api/cart/:productId
 Authorization: Bearer <token>
@@ -379,12 +411,14 @@ Body:
 ```
 
 ### 4. Remove from Cart
+
 ```http
 DELETE /api/cart/:productId
 Authorization: Bearer <token>
 ```
 
 ### 5. Clear Cart
+
 ```http
 DELETE /api/cart
 Authorization: Bearer <token>
@@ -395,6 +429,7 @@ Authorization: Bearer <token>
 ## 📦 Order Routes
 
 ### 1. Create Order
+
 ```http
 POST /api/orders
 Authorization: Bearer <token>
@@ -424,11 +459,14 @@ Body:
 ```
 
 ### 2. Get User Orders
+
 ```http
 GET /api/orders
 Authorization: Bearer <token>
 ```
+
 **Response:**
+
 ```json
 {
   "orders": [
@@ -448,17 +486,21 @@ Authorization: Bearer <token>
 ```
 
 ### 3. Hide Order
+
 ```http
 DELETE /api/orders/:orderId
 Authorization: Bearer <token>
 ```
+
 Soft deletes order from user's view (sets `hidden: true`)
 
 ### 4. Reorder
+
 ```http
 POST /api/orders/reorder/:orderId
 Authorization: Bearer <token>
 ```
+
 Creates a new order with the same items as a previous order.
 
 ---
@@ -466,6 +508,7 @@ Creates a new order with the same items as a previous order.
 ## 💳 Payment Routes
 
 ### 1. Create Payment Intent
+
 ```http
 POST /api/payment/create-intent
 Authorization: Bearer <token>
@@ -480,7 +523,9 @@ Body:
   }
 }
 ```
+
 **Response:**
+
 ```json
 {
   "clientSecret": "pi_xxxxx_secret_xxxxx"
@@ -488,6 +533,7 @@ Body:
 ```
 
 ### 2. Confirm Order (Manual Payment)
+
 ```http
 POST /api/payment/confirm-order
 Authorization: Bearer <token>
@@ -500,10 +546,12 @@ Body:
 ```
 
 ### 3. Stripe Webhook (Internal)
+
 ```http
 POST /api/payment/webhook
 Stripe-Signature: <stripe-signature-header>
 ```
+
 Handles Stripe webhook events (payment_intent.succeeded, etc.)
 
 ---
@@ -511,11 +559,14 @@ Handles Stripe webhook events (payment_intent.succeeded, etc.)
 ## 💰 Wallet Routes
 
 ### 1. Get Wallet
+
 ```http
 GET /api/wallet
 Authorization: Bearer <token>
 ```
+
 **Response:**
+
 ```json
 {
   "wallet": {
@@ -528,6 +579,7 @@ Authorization: Bearer <token>
 ```
 
 ### 2. Redeem Coupon
+
 ```http
 POST /api/wallet/redeem
 Authorization: Bearer <token>
@@ -538,7 +590,9 @@ Body:
   "orderId": "order_id_here"
 }
 ```
+
 **Response:**
+
 ```json
 {
   "message": "Coupon redeemed successfully",
@@ -552,12 +606,14 @@ Body:
 ```
 
 ### 3. Get User Coupons
+
 ```http
 GET /api/wallet/coupons
 Authorization: Bearer <token>
 ```
 
 ### 4. Validate Coupon
+
 ```http
 POST /api/wallet/validate-coupon
 Authorization: Bearer <token>
@@ -568,7 +624,9 @@ Body:
   "code": "ABC123"
 }
 ```
+
 **Response:**
+
 ```json
 {
   "valid": true,
@@ -578,6 +636,7 @@ Body:
 ```
 
 ### 5. Get Transactions
+
 ```http
 GET /api/wallet/transactions
 Authorization: Bearer <token>
@@ -588,6 +647,7 @@ Authorization: Bearer <token>
 ## ⭐ Review Routes
 
 ### 1. Create Review
+
 ```http
 POST /api/reviews
 Authorization: Bearer <token>
@@ -601,10 +661,12 @@ Body:
   "comment": "Great product!"
 }
 ```
+
 - Automatically sends invoice email when first review for an order is created
 - Updates product's average rating and total review count
 
 ### 2. Delete Review
+
 ```http
 DELETE /api/reviews/:reviewId
 Authorization: Bearer <token>
@@ -617,6 +679,7 @@ Authorization: Bearer <token>
 **Note:** All admin routes require authentication and admin role (@nexent.in email domain)
 
 ### 1. Create Product
+
 ```http
 POST /api/admin/products
 Authorization: Bearer <admin-token>
@@ -635,12 +698,14 @@ Body:
 ```
 
 ### 2. Get All Products (Admin)
+
 ```http
 GET /api/admin/products
 Authorization: Bearer <admin-token>
 ```
 
 ### 3. Update Product
+
 ```http
 PUT /api/admin/products/:id
 Authorization: Bearer <admin-token>
@@ -650,18 +715,21 @@ Body: Same as Create Product
 ```
 
 ### 4. Delete Product
+
 ```http
 DELETE /api/admin/products/:id
 Authorization: Bearer <admin-token>
 ```
 
 ### 5. Get All Orders
+
 ```http
 GET /api/admin/orders
 Authorization: Bearer <admin-token>
 ```
 
 ### 6. Update Order Status
+
 ```http
 PATCH /api/admin/orders/:orderId/status
 Authorization: Bearer <admin-token>
@@ -672,20 +740,25 @@ Body:
   "status": "shipped"
 }
 ```
+
 **Valid status values:** pending, processing, shipped, delivered, cancelled
 
 ### 7. Get All Customers
+
 ```http
 GET /api/admin/customers
 Authorization: Bearer <admin-token>
 ```
 
 ### 8. Get Dashboard Statistics
+
 ```http
 GET /api/admin/stats
 Authorization: Bearer <admin-token>
 ```
+
 **Response:**
+
 ```json
 {
   "totalRevenue": 45000,
@@ -702,6 +775,7 @@ Authorization: Bearer <admin-token>
 ## 📊 Database Models
 
 ### User Model
+
 ```javascript
 {
   email: String (unique),
@@ -718,6 +792,7 @@ Authorization: Bearer <admin-token>
 ```
 
 ### Product Model
+
 ```javascript
 {
   name: String,
@@ -738,6 +813,7 @@ Authorization: Bearer <admin-token>
 ```
 
 ### Order Model
+
 ```javascript
 {
   user: ObjectId ref User,
@@ -758,6 +834,7 @@ Authorization: Bearer <admin-token>
 ```
 
 ### Cart Model
+
 ```javascript
 {
   user: ObjectId ref User (unique),
@@ -770,6 +847,7 @@ Authorization: Bearer <admin-token>
 ```
 
 ### Wallet Model
+
 ```javascript
 {
   user: ObjectId ref User (unique),
@@ -784,6 +862,7 @@ Authorization: Bearer <admin-token>
 ```
 
 ### Coupon Model
+
 ```javascript
 {
   user: ObjectId ref User,
@@ -797,6 +876,7 @@ Authorization: Bearer <admin-token>
 ```
 
 ### Review Model
+
 ```javascript
 {
   user: ObjectId ref User,
@@ -825,11 +905,14 @@ The backend uses Inngest for background job processing:
 ## 📧 Email System
 
 ### Email Templates:
+
 1. **Order Confirmation Email** - Sent after successful order creation
 2. **Invoice Email** - Sent when user submits first review for an order
 
 ### Configuration:
+
 Uses Gmail SMTP. Create an App Password:
+
 1. Go to Google Account Settings
 2. Security → 2-Step Verification
 3. App passwords → Generate new password
@@ -852,6 +935,7 @@ Uses Gmail SMTP. Create an App Password:
 ## 🚀 Deployment
 
 ### Environment Setup
+
 1. Set `NODE_ENV=production` in environment variables
 2. Use MongoDB Atlas for database
 3. Configure production webhook URLs in Stripe/Clerk dashboards
@@ -861,6 +945,7 @@ Uses Gmail SMTP. Create an App Password:
 ### Deployment Platforms
 
 #### Render / Railway / Heroku:
+
 ```bash
 # Set environment variables in platform dashboard
 # Push to main branch
@@ -868,6 +953,7 @@ git push origin main
 ```
 
 #### VPS (Ubuntu):
+
 ```bash
 # Install Node.js and PM2
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -886,6 +972,7 @@ pm2 startup
 ```
 
 #### Docker:
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -903,11 +990,13 @@ CMD ["npm", "start"]
 ### Manual Testing with cURL
 
 **Get Products:**
+
 ```bash
 curl http://localhost:3000/api/products
 ```
 
 **Create User (with auth):**
+
 ```bash
 curl -X POST http://localhost:3000/api/user/sync \
   -H "Content-Type: application/json" \
@@ -943,6 +1032,7 @@ All routes implement try-catch blocks with appropriate HTTP status codes:
 ## 📞 Support
 
 For issues and questions:
+
 - Open an issue in the repository
 - Contact: support@nexent.in
 
@@ -967,6 +1057,7 @@ ISC License
 ## 📝 Changelog
 
 ### v1.0.0 (Current)
+
 - Initial production release
 - User authentication with Clerk
 - Product catalog and search
