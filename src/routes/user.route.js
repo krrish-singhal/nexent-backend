@@ -1,60 +1,45 @@
-import express from 'express';
-import { User } from '../models/user.model.js';
-import { requireAuth, clerkClient } from '@clerk/express';
+import { Router } from "express";
+import {
+  syncUser,
+  getCurrentUser,
+  addAddress,
+  addToWishlist,
+  deleteAddress,
+  getAddresses,
+  getWishlist,
+  removeFromWishlist,
+  updateAddress,
+  getUserProfile,
+  updateUserProfile,
+} from "../controlllers/user.controller.js";
+import { protectRoute } from "../middleware/auth.middleware.js";
+import { requireAuth } from "@clerk/express";
+import { upload } from "../middleware/multer.middleware.js";
 
-const router = express.Router();
+const router = Router();
 
-// Sync user to MongoDB after Clerk sign-in (NO AUTH for testing)
-router.post('/sync', async (req, res) => {
-  try {
-    const { clerkUserId, email, firstName, lastName, imageUrl } = req.body;
+// sync route (no auth for testing)
+router.post("/sync", syncUser);
 
-    console.log('🔄 Syncing user:', { clerkUserId, email, firstName, lastName });
+// get current user
+router.get("/me", requireAuth(), getCurrentUser);
 
-    if (!clerkUserId || !email) {
-      return res.status(400).json({ error: 'Missing required user data (clerkUserId, email)' });
-    }
+// protected routes
+router.use(protectRoute);
 
-    // Check if user already exists
-    let user = await User.findOne({ clerkId: clerkUserId });
+// profile routes
+router.get("/profile", getUserProfile);
+router.put("/profile", upload.single("profileImage"), updateUserProfile);
 
-    if (!user) {
-      // Create new user
-      user = await User.create({
-        clerkId: clerkUserId,
-        email: email,
-        name: `${firstName || ""} ${lastName || ""}`.trim() || "User",
-        imageUrl: imageUrl || "",
-        addresses: [],
-        wishlist: [],
-      });
-      console.log("✅ New user created in MongoDB:", user._id);
-    } else {
-      console.log("✅ User already exists in MongoDB:", user._id);
-    }
+// address routes
+router.post("/addresses", addAddress);
+router.get("/addresses", getAddresses);
+router.put("/addresses/:addressId", updateAddress);
+router.delete("/addresses/:addressId", deleteAddress);
 
-    res.status(200).json({ success: true, user });
-  } catch (error) {
-    console.error("❌ Error syncing user:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get current user
-router.get('/me', requireAuth(), async (req, res) => {
-  try {
-    const { userId } = req.auth;
-    const user = await User.findOne({ clerkId: userId });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.status(200).json({ user });
-  } catch (error) {
-    console.error("❌ Error fetching user:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
+// wishlist routes
+router.post("/wishlist", addToWishlist);
+router.delete("/wishlist/:productId", removeFromWishlist);
+router.get("/wishlist", getWishlist);
 
 export default router;

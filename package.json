@@ -5,7 +5,8 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",
-    "start": "node  src/server.js"
+    "start": "node  src/server.js",
+    "seed": "node src/seeds/index.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +20,10 @@
     "express": "^5.2.1",
     "inngest": "^3.49.3",
     "mongoose": "^9.1.5",
+    "multer": "^2.0.2",
+    "nodemailer": "^8.0.1",
     "nodemon": "^3.1.11",
+    "stripe": "^20.3.1",
     "svix": "^1.84.1"
   }
 }
