@@ -68,14 +68,14 @@ app.use("/api/users", userRoutes);
 
 // Root route handler
 app.get("/", (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     message: "Nexent Backend API",
     status: "running",
     version: "1.0.0",
     endpoints: {
       health: "/api/health",
-      docs: "https://github.com/nexent/api-docs"
-    }
+      docs: "https://github.com/nexent/api-docs",
+    },
   });
 });
 
