@@ -36,7 +36,7 @@ app.use(
       callback(null, true);
     },
     credentials: true,
-  })
+  }),
 );
 
 /* =========================
@@ -45,7 +45,7 @@ app.use(
 app.post(
   "/api/payment/webhook",
   express.raw({ type: "application/json" }),
-  paymentRoutes
+  paymentRoutes,
 );
 
 /* =========================
@@ -59,7 +59,7 @@ app.use(express.json());
 app.use(
   clerkMiddleware({
     enableTokenCookie: false, // VERY IMPORTANT for React Native
-  })
+  }),
 );
 
 /* =========================
@@ -101,14 +101,11 @@ app.get("/api/health", (req, res) => {
    ✅ SERVER START
    ========================= */
 app.listen(PORT, "0.0.0.0", async () => {
-  console.log(`Backend running on port ${PORT}`);
   try {
     await connectToDB();
     isDbReady = true;
-    console.log("✅ Database connected — server fully ready");
   } catch (error) {
     console.error("❌ Database connection failed:", error.message);
-    console.error("Health check will keep returning 503 until DB connects");
     // Don't crash - keep server alive but health check returns 503
   }
 });
