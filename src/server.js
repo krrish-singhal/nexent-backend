@@ -1,94 +1,108 @@
-  import express from "express";
-  import cors from "cors";
-  import path from "path";
-  import connectToDB from "./config/db.js";
-  import { ENV } from "./config/env.js";
-  import { clerkMiddleware } from "@clerk/express";
-  import { inngest, functions } from "./config/inngest.js";
-  import { serve } from "inngest/express";
-  import webhookRoutes from "./routes/webhook.route.js";
-  import userRoutes from "./routes/user.route.js";
-  import adminRoutes from "./routes/admin.routes.js";
-  import orderRotes from "./routes/order.routes.js";
-  import reviewRoutes from "./routes/review.routes.js";
-  import productRoutes from "./routes/product.routes.js";
-  import cartRoutes from "./routes/cart.routes.js";
-  import paymentRoutes from "./routes/payment.routes.js";
-  import walletRoutes from "./routes/wallet.routes.js";
+import express from "express";
+import cors from "cors";
+import path from "path";
+import connectToDB from "./config/db.js";
+import { ENV } from "./config/env.js";
+import { clerkMiddleware } from "@clerk/express";
+import { inngest, functions } from "./config/inngest.js";
+import { serve } from "inngest/express";
 
-  const app = express();
-  const __dirname = path.resolve();
-  const PORT = process.env.PORT || ENV.PORT || 3000;
+import webhookRoutes from "./routes/webhook.route.js";
+import userRoutes from "./routes/user.route.js";
+import adminRoutes from "./routes/admin.routes.js";
+import orderRoutes from "./routes/order.routes.js";
+import reviewRoutes from "./routes/review.routes.js";
+import productRoutes from "./routes/product.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
+import walletRoutes from "./routes/wallet.routes.js";
 
-  app.use(
-    cors({
-      origin: [
-        ENV.FRONTEND_URL,
-        "http://localhost:5173",
-        "http://192.168.9.236:5173",
-        "https://nexent-admin.vercel.app",
-        "https://nexent-admin.netlify.app",
-        /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:(3000|5173|8081)$/,
-        /^https:\/\/.*\.vercel\.app$/,
-        /^https:\/\/.*\.netlify\.app$/,
-      ],
-      credentials: true,
-    }),
-  );
+const app = express();
+const __dirname = path.resolve();
+const PORT = process.env.PORT || ENV.PORT || 3000;
 
-  app.use(
-    "/api/payment",
-    (req, res, next) => {
-      if (req.originalUrl === "/api/payment/webhook") {
-        express.raw({ type: "application/json" })(req, res, next);
-      } else {
-        express.json()(req, res, next); // parse json for non-webhook routes
-      }
+// Tracks whether MongoDB is fully connected.
+// Health check returns 503 until this is true so the mobile app
+// ServerReadyGate waits before firing any data queries.
+let isDbReady = false;
+
+/* =========================
+   ✅ CORS — MOBILE SAFE
+   ========================= */
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // allow mobile apps & browsers
+      callback(null, true);
     },
-    paymentRoutes,
-  );
+    credentials: true,
+  })
+);
 
-  app.use(express.json());
-  app.use(clerkMiddleware());
+/* =========================
+   ✅ STRIPE WEBHOOK (RAW)
+   ========================= */
+app.post(
+  "/api/payment/webhook",
+  express.raw({ type: "application/json" }),
+  paymentRoutes
+);
 
-  app.use("/api/webhooks", webhookRoutes);
-  app.use("/api/admin", adminRoutes);
-  app.use("/api/orders", orderRotes);
-  app.use("/api/review", reviewRoutes);
-  app.use("/api/products", productRoutes);
-  app.use("/api/cart", cartRoutes);
-  app.use("/api/wallet", walletRoutes);
+/* =========================
+   ✅ JSON PARSER
+   ========================= */
+app.use(express.json());
 
-  app.use((req, res, next) => {
-    // ...existing code...
-    next();
+/* =========================
+   ✅ CLERK — MOBILE SAFE
+   ========================= */
+app.use(
+  clerkMiddleware({
+    enableTokenCookie: false, // VERY IMPORTANT for React Native
+  })
+);
+
+/* =========================
+   ✅ ROUTES
+   ========================= */
+app.use("/api/webhooks", webhookRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/users", userRoutes);
+
+/* =========================
+   ✅ INNGEST
+   ========================= */
+app.use("/api/inngest", serve({ client: inngest, functions }));
+
+/* =========================
+   ✅ HEALTH CHECKS
+   ========================= */
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Nexent Backend API",
+    status: "running",
+    version: "1.0.0",
   });
-  app.use("/api/inngest", serve({ client: inngest, functions }));
-  app.use("/api/users", userRoutes);
+});
 
-  // Root route handler
-  app.get("/", (req, res) => {
-    res.status(200).json({
-      message: "Nexent Backend API",
-      status: "running",
-      version: "1.0.0",
-      endpoints: {
-        health: "/api/health",
-        docs: "https://github.com/nexent/api-docs",
-      },
-    });
-  });
-
-  app.get("/api/health", (req, res) => {
-    res.status(200).json({ message: "API is Working" });
-  });
-
-  if (ENV.NODE_ENV === "production" && false) {
-    app.use(express.static(path.join(__dirname, "../../admin/dist")));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "../../admin/dist/index.html"));
-    });
+app.get("/api/health", (req, res) => {
+  if (!isDbReady) {
+    return res.status(503).json({ message: "Database not ready" });
   }
-  app.listen(PORT, "0.0.0.0", async () => {
-    await connectToDB();
-  });
+  res.status(200).json({ message: "API is Working", db: "connected" });
+});
+
+/* =========================
+   ✅ SERVER START
+   ========================= */
+app.listen(PORT, "0.0.0.0", async () => {
+  console.log(`Backend running on port ${PORT}`);
+  await connectToDB();
+  isDbReady = true;
+  console.log("✅ Database connected — server fully ready");
+});
